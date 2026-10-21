@@ -1,4 +1,4 @@
-﻿# Development Plan
+# Development Plan
 
 ## 1. Guiding constraints
 
@@ -49,7 +49,7 @@ DoorCardReader/
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Hardware discovery and assessment | Complete |
-| 1 | Core domain and simulated backend | Complete, 62 tests passing |
+| 1 | Core domain and simulated backend | Complete, 63 tests passing |
 | 2 | PC/SC backend and optional MIFARE read | Complete in software; hardware-unverified |
 | 3 | PySide6 user interface | Complete |
 | 4 | Diagnostics, logging, and export | Complete |
@@ -134,7 +134,7 @@ Current blockers:
 - [x] Simulated scans produce correct card classification, memory status, and diagnostics.
 - [x] CSV/JSON exports contain no secret material.
 - [x] Stop cancels a scan within one polling interval.
-- [x] Tests pass in a clean virtual environment (62 passed).
+- [x] Tests pass in a clean virtual environment (63 passed).
 - [x] Web interface authenticates users, enforces roles/CSRF, and records simulated card workflows.
 - [x] Local web startup and deployment guidance are documented.
 - [ ] Physical card encoding is implemented and authorized (intentionally out of scope).

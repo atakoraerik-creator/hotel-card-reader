@@ -67,7 +67,11 @@ class WebSettings:
             LOGGER.warning("Unknown DOORCARD_ENCODER_MODE=%s; using simulated.", encoder_mode)
             encoder_mode = "simulated"
 
-        allowed_hosts_raw = os.environ.get("DOORCARD_WEB_ALLOWED_HOSTS", "*")
+        allowed_hosts_raw = (
+            os.environ.get("DOORCARD_WEB_ALLOWED_HOSTS", "").strip()
+            or os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+            or "*"
+        )
         allowed_hosts = tuple(
             item.strip() for item in allowed_hosts_raw.split(",") if item.strip()
         ) or ("*",)
@@ -80,7 +84,7 @@ class WebSettings:
             secret_key=secret,
             environment=environment,
             host=os.environ.get("DOORCARD_WEB_HOST", "127.0.0.1").strip(),
-            port=_env_int("DOORCARD_WEB_PORT", 8000),
+            port=_env_int("DOORCARD_WEB_PORT", _env_int("PORT", 8000)),
             secure_cookies=_env_bool(
                 "DOORCARD_WEB_SECURE_COOKIE", environment == "production"
             ),

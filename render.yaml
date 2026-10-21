@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: hotel-card-reader
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: DOORCARD_WEB_ENV
+        value: production
+      - key: DOORCARD_WEB_HOST
+        value: 0.0.0.0
+      - key: DOORCARD_WEB_SECRET
+        generateValue: true
+      - key: DOORCARD_WEB_SECURE_COOKIE
+        value: true
+      - key: DOORCARD_SEED_DEMO
+        value: false
+      - key: DOORCARD_ENCODER_MODE
+        value: simulated
+      - key: DOORCARD_DATABASE_URL
+        value: sqlite:////var/data/doorcard-web.db
+    disk:
+      name: doorcard-data
+      mountPath: /var/data
+      sizeGB: 1

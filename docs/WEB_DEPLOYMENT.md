@@ -184,7 +184,36 @@ cards.example.com {
 Caddy obtains and renews HTTPS certificates automatically. Set
 `DOORCARD_WEB_SECURE_COOKIE=true` only after HTTPS is working.
 
-### Option 2: Docker Compose
+### Option 2: Render
+
+The repository includes `render.yaml`, a Docker Blueprint with a persistent disk, generated session
+secret, HTTPS, production mode, and demo seeding disabled.
+
+1. Sign in at [render.com](https://render.com) and choose **New > Blueprint**.
+2. Connect the `hotel-card-reader` GitHub repository.
+3. Apply the Blueprint. A paid **Starter** instance is required for the persistent disk; a free
+   instance would lose the SQLite database on restart or deploy.
+4. Wait for the health check to pass, then open the `.onrender.com` URL shown by Render.
+5. Open **Shell** and create the first administrator:
+
+```bash
+python -m doorcard.web.manage create-admin \
+  --email admin@your-hotel.example \
+  --username admin \
+  --name "Hotel Administrator"
+```
+
+The prompt reads the password without echoing it. No demo account is created in production. Render
+sets `RENDER_EXTERNAL_HOSTNAME` and `PORT`, which the application uses automatically. Add a custom
+domain in Render and update DNS if needed; HTTPS is managed by Render.
+
+One-click Blueprint link:
+
+```text
+https://render.com/deploy?repo=https://github.com/atakoraerik-creator/hotel-card-reader
+```
+
+### Option 3: Docker Compose
 
 Create `.env` beside `docker-compose.yml`:
 

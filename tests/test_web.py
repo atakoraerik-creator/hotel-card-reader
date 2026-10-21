@@ -375,6 +375,18 @@ def test_seed_users_have_distinct_roles(client: TestClient) -> None:
         assert reception is not None and reception.role == "receptionist"
 
 
+def test_render_environment_defaults(monkeypatch) -> None:
+    monkeypatch.delenv("DOORCARD_WEB_ALLOWED_HOSTS", raising=False)
+    monkeypatch.delenv("DOORCARD_WEB_PORT", raising=False)
+    monkeypatch.setenv("RENDER_EXTERNAL_HOSTNAME", "hotel-card-reader.onrender.com")
+    monkeypatch.setenv("PORT", "10000")
+    monkeypatch.setenv("DOORCARD_WEB_SECRET", "render-test-secret-with-enough-length")
+
+    settings = WebSettings.from_env()
+    assert settings.allowed_hosts == ("hotel-card-reader.onrender.com",)
+    assert settings.port == 10000
+
+
 def test_unknown_page_renders_error_template(client: TestClient) -> None:
     _login(client)
     response = client.get("/does-not-exist")

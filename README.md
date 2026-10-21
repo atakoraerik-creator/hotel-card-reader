@@ -1,4 +1,4 @@
-﻿# Universal Electronic Door Card Reader
+# Universal Electronic Door Card Reader
 
 A read-only desktop application for identifying electronic hotel/RFID door cards with a
 PC/SC-compatible reader. It reads public identification data, attempts authorized MIFARE Classic
@@ -7,7 +7,7 @@ exports a report.
 
 > **Current verification status**
 >
-> - 62 automated tests pass, using simulated cards, a fake MIFARE transport, and FastAPI test
+> - 63 automated tests pass, using simulated cards, a fake MIFARE transport, and FastAPI test
 >   clients. The web interface is simulated for card issuance; no physical card is written.
 > - **No physical reader was attached while this project was built.** Real-hardware tests must be
 >   performed by the user and are not claimed here.
@@ -71,8 +71,8 @@ writing.
 
 Recommended PC/SC readers:
 
-- **ACS ACR122U** — ISO/IEC 14443 A/B, MIFARE, DESFire APDUs; no ISO 15693.
-- **ACS ACR1252U** — adds ISO/IEC 15693 and NFC features.
+- **ACS ACR122U** � ISO/IEC 14443 A/B, MIFARE, DESFire APDUs; no ISO 15693.
+- **ACS ACR1252U** � adds ISO/IEC 15693 and NFC features.
 - Other CCID/PC/SC contactless readers may work for ATR/UID; memory commands are reader-dependent.
 
 The Brassco BE-KKYD Pro must be treated as **vendor-specific and unverified** until its interface
@@ -156,6 +156,9 @@ for LAN, systemd, Caddy, Docker, HTTPS, and backup guidance.
 The web bridge supports simulated, PC/SC, and documented vendor adapters for **read-only status and
 detection**. It has no card-write, erase, key-loading, or cloning endpoint.
 
+For Render deployment, the repository includes `render.yaml` with a persistent disk and production
+settings. See [docs/WEB_DEPLOYMENT.md](docs/WEB_DEPLOYMENT.md#option-2-render).
+
 ### Optional MIFARE memory read
 
 Enable **Attempt read-only MIFARE Classic memory read** and optionally enter a 6-byte key
@@ -215,7 +218,7 @@ Do not attempt to bypass authentication or clone credentials. See
 
 ## Logs and privacy
 
-Logs are written to `logs/doorcard.log.jsonl` (rotating, 1 MB × 3). Each line is JSON with a UTC
+Logs are written to `logs/doorcard.log.jsonl` (rotating, 1 MB � 3). Each line is JSON with a UTC
 timestamp, level, logger, and message. Structured events include `card_detected`,
 `no_card_detected`, `scan_result`, and `diagnostic` records with code, message, detail, and
 remediation. A redaction filter removes known session keys from messages and exception text.
@@ -264,6 +267,7 @@ docs/                   Assessment, plan, compatibility, diagnostics, deployment
 tools/inspect_system.ps1
 Dockerfile
 docker-compose.yml
+render.yaml
 ```
 
 ## Tests
