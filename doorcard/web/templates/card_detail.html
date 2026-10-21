@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, empty_state, status_badge %}
+{% block title %}Card {{ card.card_number }} · {{ hotel.name }}{% endblock %}
+{% block page_title %}Card {{ card.card_number }}{% endblock %}
+{% block eyebrow %}Key card record{% endblock %}
+
+{% block content %}
+<a class="back-link" href="/cards">{{ icon("arrow-left") }} Back to cards</a>
+
+<div class="detail-grid">
+  <div class="detail-main">
+    <section class="panel card-hero">
+      <div class="card-hero-top">
+        <span class="keycard-visual">{{ icon("key") }}</span>
+        <div>
+          <span class="eyebrow">Card record</span>
+          <h2 class="mono">{{ card.card_number }}</h2>
+          <div class="card-hero-meta">{{ status_badge(card.status) }} <span>Simulation record</span></div>
+        </div>
+      </div>
+      <div class="card-hero-grid">
+        <div><span>Guest</span><strong>{{ card.guest.full_name }}</strong></div>
+        <div><span>Room</span><strong>{{ card.room.number }} · {{ card.room.room_type }}</strong></div>
+        <div><span>Issued</span><strong>{{ card.issued_at|dt }}</strong></div>
+        <div><span>Expires</span><strong>{{ card.expires_at|dt }}</strong></div>
+      </div>
+      {% if card.notes %}
+      <div class="card-note"><span>Notes</span><p>{{ card.notes }}</p></div>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">History</span>
+          <h2>Related activity</h2>
+        </div>
+      </div>
+      {% if history %}
+      <div class="activity-list">
+        {% for entry in history %}
+        <div class="activity-item">
+          <span class="activity-dot"></span>
+          <div>
+            <p>{{ entry.description }}</p>
+            <small>{{ entry.user.full_name if entry.user else "System" }} · {{ entry.created_at|dt }}</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      {{ empty_state("activity", "No related activity", "Actions on this card will be recorded here.") }}
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="detail-aside">
+    <section class="panel">
+      <div class="panel-heading"><div><span class="eyebrow">Actions</span><h2>Manage card</h2></div></div>
+      <div class="action-stack">
+        {% if card.status == "active" %}
+        <form method="post" action="/cards/{{ card.id }}/cancel" data-confirm="Cancel this card record? The guest will need a replacement for room access.">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button-danger button-block" type="submit">{{ icon("x") }} Cancel card</button>
+        </form>
+        {% endif %}
+        {% if card.status in ["active", "expired"] %}
+        <form method="post" action="/cards/{{ card.id }}/replace" data-confirm="Replace this card with a new simulated record?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button-secondary button-block" type="submit">{{ icon("refresh") }} Replace card</button>
+        </form>
+        {% endif %}
+        {% if card.status in ["cancelled", "replaced"] %}
+        <p class="muted">This card record is closed. Issue a new card from the guests page if access is needed.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading"><div><span class="eyebrow">Record</span><h2>Metadata</h2></div></div>
+      <dl class="meta-list">
+        <div><dt>Card ID</dt><dd>#{{ card.id }}</dd></div>
+        <div><dt>Issued by</dt><dd>{{ card.issued_by.full_name if card.issued_by else "System" }}</dd></div>
+        <div><dt>Created</dt><dd>{{ card.created_at|dt }}</dd></div>
+        <div><dt>Updated</dt><dd>{{ card.updated_at|dt }}</dd></div>
+        <div><dt>Guest status</dt><dd>{{ card.guest.status|status_label }}</dd></div>
+      </dl>
+    </section>
+
+    <div class="notice notice-info">
+      {{ icon("shield") }}
+      <div><strong>No hardware write.</strong> These actions update the local record only.</div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

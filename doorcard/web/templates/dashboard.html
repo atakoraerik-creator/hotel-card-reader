@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, empty_state, status_badge %}
+{% block title %}Dashboard · {{ hotel.name }}{% endblock %}
+{% block page_title %}Front desk overview{% endblock %}
+{% block eyebrow %}Today at {{ hotel.name }}{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <div>
+    <p>Good to see you, {{ user.full_name.split()[0] }}. Here is the current shape of the house.</p>
+  </div>
+  <div class="page-actions">
+    <a class="button button-secondary" href="/guests/new">{{ icon("plus") }} Register guest</a>
+    <a class="button button-primary" href="/cards/issue">{{ icon("key") }} Issue card</a>
+  </div>
+</div>
+
+<section class="metric-grid" aria-label="Hotel summary">
+  <article class="metric-card metric-navy">
+    <span class="metric-icon">{{ icon("rooms") }}</span>
+    <span class="metric-label">Total rooms</span>
+    <strong>{{ stats.total_rooms }}</strong>
+    <small>Across all floors</small>
+  </article>
+  <article class="metric-card">
+    <span class="metric-icon metric-icon-warning">{{ icon("bed") }}</span>
+    <span class="metric-label">Occupied</span>
+    <strong>{{ stats.occupied_rooms }}</strong>
+    <small>{{ stats.occupancy_pct }}% occupancy</small>
+  </article>
+  <article class="metric-card">
+    <span class="metric-icon metric-icon-success">{{ icon("check") }}</span>
+    <span class="metric-label">Available</span>
+    <strong>{{ stats.available_rooms }}</strong>
+    <small>{{ stats.maintenance_rooms }} out of service</small>
+  </article>
+  <article class="metric-card">
+    <span class="metric-icon metric-icon-gold">{{ icon("key") }}</span>
+    <span class="metric-label">Active cards</span>
+    <strong>{{ stats.active_cards }}</strong>
+    <small>Simulation records</small>
+  </article>
+  <article class="metric-card">
+    <span class="metric-icon metric-icon-danger">{{ icon("alert") }}</span>
+    <span class="metric-label">Expired cards</span>
+    <strong>{{ stats.expired_cards }}</strong>
+    <small>Needs review</small>
+  </article>
+</section>
+
+<div class="dashboard-grid">
+  <section class="panel panel-span-2">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Housekeeping</span>
+        <h2>Occupancy at a glance</h2>
+      </div>
+      <a class="text-link" href="/rooms">View rooms {{ icon("chevron") }}</a>
+    </div>
+    <div class="occupancy">
+      <div class="occupancy-ring" style="--value: {{ stats.occupancy_pct }}%">
+        <span><strong>{{ stats.occupancy_pct }}%</strong><small>occupied</small></span>
+      </div>
+      <div class="occupancy-copy">
+        <div class="legend-row"><span class="legend-dot legend-occupied"></span> Occupied <strong>{{ stats.occupied_rooms }}</strong></div>
+        <div class="legend-row"><span class="legend-dot legend-available"></span> Available <strong>{{ stats.available_rooms }}</strong></div>
+        <div class="legend-row"><span class="legend-dot legend-maintenance"></span> Maintenance <strong>{{ stats.maintenance_rooms }}</strong></div>
+        <p class="muted">Room status is kept in sync with guest check-in and check-out records.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Quick actions</span>
+        <h2>Front desk</h2>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <a class="quick-action" href="/guests/new">{{ icon("guests") }}<span><strong>Register guest</strong><small>Add details and assign a room</small></span>{{ icon("chevron") }}</a>
+      <a class="quick-action" href="/cards/issue">{{ icon("key") }}<span><strong>Issue key card</strong><small>Create an audited card record</small></span>{{ icon("chevron") }}</a>
+      <a class="quick-action" href="/encoder">{{ icon("encoder") }}<span><strong>Encoder status</strong><small>Check simulated hardware</small></span>{{ icon("chevron") }}</a>
+      <a class="quick-action" href="/activity">{{ icon("activity") }}<span><strong>Review activity</strong><small>See recent audited actions</small></span>{{ icon("chevron") }}</a>
+    </div>
+  </section>
+</div>
+
+<div class="dashboard-grid">
+  <section class="panel panel-span-2">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Cards</span>
+        <h2>Expiring soon</h2>
+      </div>
+      <a class="text-link" href="/cards">All cards {{ icon("chevron") }}</a>
+    </div>
+    {% if expiring %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Card</th><th>Room</th><th>Guest</th><th>Expires</th><th></th></tr></thead>
+        <tbody>
+          {% for card in expiring %}
+          <tr>
+            <td><span class="cell-strong">{{ card.card_number }}</span></td>
+            <td>{{ card.room.number }}</td>
+            <td>{{ card.guest.full_name }}</td>
+            <td>{{ card.expires_at|dt }}</td>
+            <td class="cell-actions"><a class="icon-button" href="/cards/{{ card.id }}" aria-label="Open card">{{ icon("chevron") }}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    {{ empty_state("cards", "No cards expiring soon", "Active card records outside the next three days will appear here.") }}
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Audit trail</span>
+        <h2>Recent activity</h2>
+      </div>
+      <a class="text-link" href="/activity">Full log {{ icon("chevron") }}</a>
+    </div>
+    {% if recent %}
+    <div class="activity-list">
+      {% for entry in recent %}
+      <div class="activity-item">
+        <span class="activity-dot"></span>
+        <div>
+          <p>{{ entry.description }}</p>
+          <small>{{ entry.user.full_name if entry.user else "System" }} · {{ entry.created_at|dt }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    {{ empty_state("activity", "No activity yet", "Authorized actions will be recorded here.") }}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

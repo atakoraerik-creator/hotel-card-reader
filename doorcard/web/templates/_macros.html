@@ -1,0 +1,22 @@
+{% macro icon(name, cls="icon") -%}
+<svg class="{{ cls }}" aria-hidden="true"><use href="#i-{{ name }}"></use></svg>
+{%- endmacro %}
+
+{% macro field_error(errors, name) -%}
+{% if errors.get(name) %}<p class="field-error">{{ errors.get(name) }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro empty_state(icon_name, title, text, action_url=None, action_label=None) -%}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon(icon_name) }}</span>
+  <h3>{{ title }}</h3>
+  <p>{{ text }}</p>
+  {% if action_url and action_label %}
+  <a class="button button-primary" href="{{ action_url }}">{{ icon("plus") }} {{ action_label }}</a>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro status_badge(value) -%}
+<span class="badge badge-{{ value|status_tone }}">{{ value|status_label }}</span>
+{%- endmacro %}

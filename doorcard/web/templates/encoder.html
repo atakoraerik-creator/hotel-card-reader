@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, empty_state %}
+{% block title %}Encoder · {{ hotel.name }}{% endblock %}
+{% block page_title %}Encoder connection{% endblock %}
+{% block eyebrow %}Read-only hardware bridge{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <div>
+    <p>Check the local encoder bridge, list readers, and run a simulated read-only detection.</p>
+  </div>
+  <div class="page-actions">
+    <form method="post" action="/encoder/check" data-loading-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button-secondary" type="submit">{{ icon("refresh") }} <span class="button-label">Check connection</span><span class="spinner" aria-hidden="true"></span></button>
+    </form>
+    <form method="post" action="/encoder/detect" data-loading-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="sample" value="mifare_classic_1k">
+      <button class="button button-primary" type="submit">{{ icon("scan") }} <span class="button-label">Run detection</span><span class="spinner" aria-hidden="true"></span></button>
+    </form>
+  </div>
+</div>
+
+<section class="encoder-status {% if encoder.connected %}is-connected{% else %}is-disconnected{% endif %}">
+  <span class="encoder-status-icon">{% if encoder.connected %}{{ icon("check") }}{% else %}{{ icon("wifi-off") }}{% endif %}</span>
+  <div>
+    <span class="eyebrow">{{ encoder.mode_label }}</span>
+    <h2>{% if encoder.connected %}Encoder bridge ready{% else %}Encoder unavailable{% endif %}</h2>
+    <p>{{ encoder.message }}</p>
+  </div>
+  <span class="status-pill {% if encoder.connected %}status-pill-success{% else %}status-pill-danger{% endif %}">
+    {% if encoder.connected %}Connected{% else %}Not connected{% endif %}
+  </span>
+</section>
+
+<div class="encoder-grid">
+  <section class="panel">
+    <div class="panel-heading"><div><span class="eyebrow">Configuration</span><h2>Bridge details</h2></div></div>
+    <dl class="meta-list">
+      <div><dt>Mode</dt><dd>{{ encoder.mode_label }}</dd></div>
+      <div><dt>Last checked</dt><dd>{{ encoder.last_checked or "Not checked in this session" }}</dd></div>
+      <div><dt>Readers found</dt><dd>{{ encoder.readers|length }}</dd></div>
+      <div><dt>Hardware write</dt><dd><span class="badge badge-success">Disabled</span></dd></div>
+      <div><dt>Card detected</dt><dd>{{ "Yes" if encoder.card_detected else "No" }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading"><div><span class="eyebrow">Detected card</span><h2>Read-only result</h2></div></div>
+    {% if encoder.card %}
+    <dl class="meta-list">
+      <div><dt>Technology</dt><dd>{{ encoder.card.technology }}</dd></div>
+      <div><dt>UID</dt><dd class="mono">{{ encoder.card.uid_display }}</dd></div>
+      <div><dt>Protocol</dt><dd>{{ encoder.card.protocol or "—" }}</dd></div>
+      <div><dt>Frequency</dt><dd>{{ encoder.card.frequency or "—" }}</dd></div>
+      <div><dt>Readable</dt><dd>{{ "Yes" if encoder.card.readable else "No" }}</dd></div>
+      <div><dt>Confidence</dt><dd>{{ encoder.card.confidence|title }}</dd></div>
+    </dl>
+    {% else %}
+    <div class="quiet-empty">{{ icon("scan") }}<p>Run a detection to see the simulated card identity. No memory read or write is performed.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<section class="panel">
+  <div class="panel-heading"><div><span class="eyebrow">Readers</span><h2>Available devices</h2></div></div>
+  {% if encoder.readers %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Kind</th><th>Vendor</th><th>Driver</th><th>PC/SC</th></tr></thead>
+      <tbody>
+        {% for reader in encoder.readers %}
+        <tr>
+          <td><span class="cell-strong">{{ reader.name }}</span></td>
+          <td>{{ reader.kind }}</td>
+          <td>{{ reader.vendor or "—" }}</td>
+          <td>{{ reader.driver or "—" }}</td>
+          <td>{{ "Yes" if reader.supports_pcsc else "No" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="quiet-empty">{{ icon("wifi-off") }}<p>No readers reported. In simulation mode this is expected. For real hardware, start the Smart Card service and connect a supported PC/SC encoder.</p></div>
+  {% endif %}
+</section>
+
+<div class="encoder-grid">
+  <section class="panel">
+    <div class="panel-heading"><div><span class="eyebrow">Simulation</span><h2>Sample cards</h2></div></div>
+    <form method="post" action="/encoder/detect" class="stack-form" data-loading-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="field">
+        <label for="sample">Sample identity</label>
+        <select id="sample" name="sample">
+          {% for sample in samples %}
+          <option value="{{ sample.key }}" {% if selected_sample == sample.key %}selected{% endif %}>{{ sample.label }} · {{ sample.description }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="button button-secondary" type="submit">{{ icon("scan") }} Detect sample</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading"><div><span class="eyebrow">Diagnostics</span><h2>Bridge messages</h2></div></div>
+    {% if encoder.diagnostics %}
+    <div class="diagnostic-list">
+      {% for item in encoder.diagnostics %}
+      <div class="diagnostic diagnostic-{{ item.severity }}">
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.message }}</p>
+        {% if item.detail %}<small>{{ item.detail }}</small>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="quiet-empty">{{ icon("check") }}<p>No diagnostics reported by the current bridge.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<div class="notice notice-info">
+  {{ icon("shield") }}
+  <div><strong>Hardware safety.</strong> The web bridge exposes status, reader listing, and read-only detection only. There is no write, erase, key-loading, or credential-cloning endpoint.</div>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, field_error %}
+{% block title %}{{ "Add team member" if mode == "new" else "Edit team member" }} · {{ hotel.name }}{% endblock %}
+{% block page_title %}{{ "Add a team member" if mode == "new" else "Edit team member" }}{% endblock %}
+{% block eyebrow %}Team access{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="form-page-main">
+    <a class="back-link" href="/users">{{ icon("arrow-left") }} Back to team access</a>
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">{{ "New account" if mode == "new" else "Account details" }}</span>
+          <h2>{{ "Member information" if mode == "new" else "Update member" }}</h2>
+        </div>
+      </div>
+
+      <form method="post" action="{{ '/users/new' if mode == 'new' else '/users/' ~ user_id ~ '/edit' }}" class="stack-form" data-loading-form>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-grid">
+          <div class="field field-span-2">
+            <label for="full_name">Full name</label>
+            <input id="full_name" name="full_name" value="{{ form.full_name }}" maxlength="120" required placeholder="Team member’s full name">
+            {{ field_error(errors, "full_name") }}
+          </div>
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" name="username" value="{{ form.username }}" maxlength="60" required placeholder="e.g. alex.morgan">
+            <p class="field-hint">Lowercase letters, numbers, dots, dashes, or underscores.</p>
+            {{ field_error(errors, "username") }}
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="{{ form.email }}" maxlength="255" required placeholder="name@hotel.com">
+            {{ field_error(errors, "email") }}
+          </div>
+          <div class="field">
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+              {% for value in roles %}
+              <option value="{{ value }}" {% if form.role == value %}selected{% endif %}>{{ role_labels[value] }}</option>
+              {% endfor %}
+            </select>
+            {{ field_error(errors, "role") }}
+          </div>
+          <div class="field">
+            <label>Account status</label>
+            <label class="checkbox-card" for="active">
+              <input id="active" name="active" type="checkbox" value="1" {% if form.active %}checked{% endif %}>
+              <span><strong>Account is active</strong><small>Disabled accounts cannot sign in.</small></span>
+            </label>
+            {{ field_error(errors, "active") }}
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="password">Password{% if mode == "edit" %} <span class="label-optional">Leave blank to keep current</span>{% endif %}</label>
+            <div class="input-shell">
+              {{ icon("lock") }}
+              <input id="password" name="password" type="password" autocomplete="new-password" {% if mode == "new" %}required{% endif %} placeholder="At least 10 characters">
+              <button type="button" class="password-toggle" data-toggle-password data-target="password" aria-label="Show password">
+                <span data-eye-show>{{ icon("eye") }}</span>
+                <span data-eye-hide hidden>{{ icon("eye-off") }}</span>
+              </button>
+            </div>
+            <p class="field-hint">Use at least 10 characters with upper and lower case letters and a number.</p>
+            {{ field_error(errors, "password") }}
+          </div>
+          <div class="field">
+            <label for="password_confirm">Confirm password</label>
+            <div class="input-shell">
+              {{ icon("lock") }}
+              <input id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" {% if mode == "new" %}required{% endif %} placeholder="Repeat the password">
+              <button type="button" class="password-toggle" data-toggle-password data-target="password_confirm" aria-label="Show password confirmation">
+                <span data-eye-show>{{ icon("eye") }}</span>
+                <span data-eye-hide hidden>{{ icon("eye-off") }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a class="button button-ghost" href="/users">Cancel</a>
+          <button class="button button-primary" type="submit">
+            <span class="button-label">{{ "Create account" if mode == "new" else "Save changes" }}</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+  <aside class="form-aside">
+    <div class="info-card">
+      {{ icon("shield") }}
+      <h3>Permissions</h3>
+      <p>Receptionists can manage rooms, guests, cards, and view activity. Administrators can also manage accounts and hotel settings.</p>
+    </div>
+    <div class="info-card">
+      {{ icon("lock") }}
+      <h3>Password safety</h3>
+      <p>Passwords are stored as scrypt hashes. They are never written to logs or displayed after creation.</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DOORCARD_WEB_ENV: production
+      DOORCARD_WEB_SECRET: ${DOORCARD_WEB_SECRET:?Set DOORCARD_WEB_SECRET in .env}
+      DOORCARD_WEB_ALLOWED_HOSTS: ${DOORCARD_WEB_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DOORCARD_WEB_SECURE_COOKIE: "false"
+      DOORCARD_SEED_DEMO: "false"
+      DOORCARD_ENCODER_MODE: simulated
+    volumes:
+      - doorcard_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  doorcard_data:

@@ -1,0 +1,26 @@
+{% from "_macros.html" import icon %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ status_code }} · {{ hotel_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body class="error-body">
+  {% include "_sprite.html" %}
+  <main class="error-shell">
+    <div class="error-mark">
+      {% if status_code == 404 %}{{ icon("search") }}{% elif status_code == 403 %}{{ icon("lock") }}{% else %}{{ icon("alert") }}{% endif %}
+    </div>
+    <span class="error-code">{{ status_code }}</span>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <div class="error-actions">
+      <a class="button button-primary" href="/dashboard">Back to dashboard</a>
+      <a class="button button-ghost" href="/login">Sign in again</a>
+    </div>
+    <small>&copy; {{ current_year }} {{ hotel_name }} · Card Manager</small>
+  </main>
+</body>
+</html>

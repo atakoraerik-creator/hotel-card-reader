@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, empty_state, status_badge %}
+{% block title %}Key cards · {{ hotel.name }}{% endblock %}
+{% block page_title %}Key card management{% endblock %}
+{% block eyebrow %}Records, status, and history{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <div>
+    <p>Issue audited card records for checked-in guests. No physical card is written in simulation mode.</p>
+  </div>
+  <div class="page-actions">
+    <a class="button button-primary" href="/cards/issue">{{ icon("key") }} Issue card</a>
+  </div>
+</div>
+
+<div class="notice notice-info">
+  {{ icon("shield") }}
+  <div><strong>Simulation-only issuance.</strong> Card numbers and statuses are stored in the database. A physical Brassco encoder is not written until a documented SDK adapter is configured and approved.</div>
+</div>
+
+<section class="toolbar panel">
+  <form method="get" action="/cards" class="toolbar-form">
+    <div class="input-shell input-shell-compact">
+      {{ icon("search") }}
+      <input type="search" name="q" value="{{ q }}" placeholder="Search card, room, or guest" aria-label="Search cards">
+    </div>
+    <select name="status" aria-label="Filter by card status">
+      <option value="">All statuses</option>
+      {% for value in statuses %}
+      <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ status_labels[value] }}</option>
+      {% endfor %}
+    </select>
+    <button class="button button-secondary" type="submit">Filter</button>
+    {% if q or selected_status %}<a class="text-link" href="/cards">Clear</a>{% endif %}
+  </form>
+  <span class="toolbar-count">{{ cards|length }} card{% if cards|length != 1 %}s{% endif %}</span>
+</section>
+
+<section class="panel panel-flush">
+  {% if cards %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Card</th><th>Room</th><th>Guest</th><th>Issued</th><th>Expires</th><th>Status</th><th class="cell-actions">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for card in cards %}
+        <tr>
+          <td><span class="cell-strong mono">{{ card.card_number }}</span><small class="cell-sub">ID {{ card.id }}</small></td>
+          <td><span class="room-chip">{{ card.room.number }}</span></td>
+          <td>{{ card.guest.full_name }}</td>
+          <td class="cell-nowrap">{{ card.issued_at|dt }}</td>
+          <td class="cell-nowrap">{{ card.expires_at|dt }}</td>
+          <td>{{ status_badge(card.status) }}</td>
+          <td class="cell-actions"><a class="icon-button" href="/cards/{{ card.id }}" aria-label="Open card {{ card.card_number }}">{{ icon("chevron") }}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  {{ empty_state("cards", "No card records", "Issue a card for a checked-in guest or adjust the current search.", "/cards/issue", "Issue card") }}
+  {% endif %}
+</section>
+{% endblock %}

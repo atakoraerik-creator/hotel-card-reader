@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, empty_state, status_badge %}
+{% block title %}Guests · {{ hotel.name }}{% endblock %}
+{% block page_title %}Guest management{% endblock %}
+{% block eyebrow %}Arrivals, stays, and departures{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <div>
+    <p>Register guests, assign rooms, and keep stay dates accurate.</p>
+  </div>
+  <div class="page-actions">
+    <a class="button button-primary" href="/guests/new">{{ icon("plus") }} Register guest</a>
+  </div>
+</div>
+
+<section class="toolbar panel">
+  <form method="get" action="/guests" class="toolbar-form">
+    <div class="input-shell input-shell-compact">
+      {{ icon("search") }}
+      <input type="search" name="q" value="{{ q }}" placeholder="Search name, email, or document" aria-label="Search guests">
+    </div>
+    <select name="status" aria-label="Filter by guest status">
+      <option value="">All statuses</option>
+      {% for value in statuses %}
+      <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ status_labels[value] }}</option>
+      {% endfor %}
+    </select>
+    <button class="button button-secondary" type="submit">Filter</button>
+    {% if q or selected_status %}<a class="text-link" href="/guests">Clear</a>{% endif %}
+  </form>
+  <span class="toolbar-count">{{ guests|length }} guest{% if guests|length != 1 %}s{% endif %}</span>
+</section>
+
+<section class="panel panel-flush">
+  {% if guests %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Guest</th><th>Room</th><th>Stay</th><th>Status</th><th>Contact</th><th class="cell-actions">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for guest in guests %}
+        <tr>
+          <td>
+            <div class="person-cell">
+              <span class="avatar avatar-small">{{ guest.full_name|initials }}</span>
+              <span><strong>{{ guest.full_name }}</strong><small>{{ guest.document_id or "No document on file" }}</small></span>
+            </div>
+          </td>
+          <td>{% if guest.room %}<span class="room-chip">{{ guest.room.number }}</span>{% else %}<span class="muted">Unassigned</span>{% endif %}</td>
+          <td class="cell-nowrap">
+            {% if guest.check_in %}{{ guest.check_in|short_date }}{% else %}—{% endif %}
+            <span class="cell-muted">to</span>
+            {% if guest.check_out %}{{ guest.check_out|short_date }}{% else %}—{% endif %}
+          </td>
+          <td>{{ status_badge(guest.status) }}</td>
+          <td class="cell-muted">{{ guest.email or guest.phone or "—" }}</td>
+          <td class="cell-actions"><a class="icon-button" href="/guests/{{ guest.id }}/edit" aria-label="Edit guest {{ guest.full_name }}">{{ icon("edit") }}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  {{ empty_state("guests", "No guests found", "Register a guest or adjust the current search.", "/guests/new", "Register guest") }}
+  {% endif %}
+</section>
+{% endblock %}

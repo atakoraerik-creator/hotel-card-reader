@@ -1,0 +1,137 @@
+{% from "_macros.html" import icon %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}{{ hotel.name }}{% endblock %} · Card Manager</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body class="app-body">
+  {% include "_sprite.html" %}
+  <div class="loading-bar" id="loading-bar" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <a class="brand" href="/dashboard" aria-label="{{ hotel.name }} dashboard">
+        <span class="brand-mark">{{ icon("hotel") }}</span>
+        <span class="brand-copy">
+          <strong>{{ hotel.name }}</strong>
+          <small>Card Manager</small>
+        </span>
+      </a>
+
+      <div class="sidebar-section-label">Operations</div>
+      <nav class="nav">
+        <a class="nav-link {% if active == 'dashboard' %}is-active{% endif %}" href="/dashboard">
+          {{ icon("dashboard") }}<span>Dashboard</span>
+        </a>
+        <a class="nav-link {% if active == 'rooms' %}is-active{% endif %}" href="/rooms">
+          {{ icon("rooms") }}<span>Rooms</span>
+        </a>
+        <a class="nav-link {% if active == 'guests' %}is-active{% endif %}" href="/guests">
+          {{ icon("guests") }}<span>Guests</span>
+        </a>
+        <a class="nav-link {% if active == 'cards' %}is-active{% endif %}" href="/cards">
+          {{ icon("cards") }}<span>Key cards</span>
+        </a>
+        <a class="nav-link {% if active == 'encoder' %}is-active{% endif %}" href="/encoder">
+          {{ icon("encoder") }}<span>Encoder</span>
+        </a>
+        <a class="nav-link {% if active == 'activity' %}is-active{% endif %}" href="/activity">
+          {{ icon("activity") }}<span>Activity log</span>
+        </a>
+      </nav>
+
+      {% if user.role == "administrator" %}
+      <div class="sidebar-section-label">Administration</div>
+      <nav class="nav">
+        <a class="nav-link {% if active == 'users' %}is-active{% endif %}" href="/users">
+          {{ icon("users") }}<span>Team access</span>
+        </a>
+        <a class="nav-link {% if active == 'settings' %}is-active{% endif %}" href="/settings">
+          {{ icon("settings") }}<span>Settings</span>
+        </a>
+      </nav>
+      {% endif %}
+
+      <div class="sidebar-foot">
+        <div class="sidebar-safety">
+          {{ icon("shield") }}
+          <span>Read-only card mode. No credential writes.</span>
+        </div>
+        <div class="sidebar-user">
+          <span class="avatar">{{ user.full_name|initials }}</span>
+          <span class="sidebar-user-copy">
+            <strong>{{ user.full_name }}</strong>
+            <small>{{ user.role|status_label }}</small>
+          </span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <div class="app-main">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
+          {{ icon("menu") }}
+        </button>
+        <div class="topbar-title">
+          <span class="eyebrow">{% block eyebrow %}Front desk operations{% endblock %}</span>
+          <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="topbar-date">{{ icon("calendar") }} {{ today|short_date }}</span>
+          <div class="topbar-user">
+            <span class="avatar avatar-small">{{ user.full_name|initials }}</span>
+            <span class="topbar-user-copy">
+              <strong>{{ user.full_name }}</strong>
+              <small>{{ user.role|status_label }}</small>
+            </span>
+          </div>
+          <form method="post" action="/logout" class="logout-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button-ghost button-small" type="submit" title="Sign out">
+              {{ icon("logout") }} <span>Sign out</span>
+            </button>
+          </form>
+        </div>
+      </header>
+
+      <main class="content" id="main-content">
+        {% if flashes %}
+        <div class="toast-stack" aria-live="polite">
+          {% for flash in flashes %}
+          <div class="toast toast-{{ flash.category }}" role="status">
+            <span class="toast-icon">
+              {% if flash.category == "success" %}{{ icon("check") }}
+              {% elif flash.category == "error" %}{{ icon("alert") }}
+              {% elif flash.category == "warning" %}{{ icon("alert") }}
+              {% else %}{{ icon("clock") }}{% endif %}
+            </span>
+            <span>{{ flash.message }}</span>
+            <button type="button" class="toast-close" aria-label="Dismiss">{{ icon("x") }}</button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="app-footer">
+        <span>&copy; {{ current_year }} {{ hotel.name }}</span>
+        <span class="footer-separator">·</span>
+        <span>Card Manager</span>
+        <span class="footer-separator">·</span>
+        <span class="footer-muted">Simulation mode until a documented encoder adapter is configured</span>
+      </footer>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', path='js/app.js') }}" defer></script>
+</body>
+</html>

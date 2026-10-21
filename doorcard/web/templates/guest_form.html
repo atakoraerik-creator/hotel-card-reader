@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, field_error %}
+{% block title %}{{ "Register guest" if mode == "new" else "Edit guest" }} · {{ hotel.name }}{% endblock %}
+{% block page_title %}{{ "Register a guest" if mode == "new" else "Edit guest" }}{% endblock %}
+{% block eyebrow %}Guest management{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="form-page-main">
+    <a class="back-link" href="/guests">{{ icon("arrow-left") }} Back to guests</a>
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">{{ "New stay" if mode == "new" else "Update stay" }}</span>
+          <h2>{{ "Guest details" if mode == "new" else "Edit guest record" }}</h2>
+        </div>
+      </div>
+
+      <form method="post" action="{{ '/guests/new' if mode == 'new' else '/guests/' ~ guest_id ~ '/edit' }}" class="stack-form" data-loading-form>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-grid">
+          <div class="field field-span-2">
+            <label for="full_name">Full name</label>
+            <input id="full_name" name="full_name" value="{{ form.full_name }}" maxlength="160" required placeholder="Guest’s full name">
+            {{ field_error(errors, "full_name") }}
+          </div>
+          <div class="field">
+            <label for="email">Email <span class="label-optional">Optional</span></label>
+            <input id="email" name="email" type="email" value="{{ form.email }}" maxlength="255" placeholder="guest@example.com">
+            {{ field_error(errors, "email") }}
+          </div>
+          <div class="field">
+            <label for="phone">Phone <span class="label-optional">Optional</span></label>
+            <input id="phone" name="phone" type="tel" value="{{ form.phone }}" maxlength="50" placeholder="+1 555 0100">
+            {{ field_error(errors, "phone") }}
+          </div>
+          <div class="field">
+            <label for="document_id">Document ID <span class="label-optional">Optional</span></label>
+            <input id="document_id" name="document_id" value="{{ form.document_id }}" maxlength="80" placeholder="Passport or ID reference">
+            {{ field_error(errors, "document_id") }}
+          </div>
+          <div class="field">
+            <label for="room_id">Room</label>
+            <select id="room_id" name="room_id">
+              <option value="">Unassigned</option>
+              {% for room in rooms %}
+              <option value="{{ room.id }}" {% if form.room_id|string == room.id|string %}selected{% endif %}>
+                {{ room.number }} · {{ room.room_type }} ({{ room.status|status_label }})
+              </option>
+              {% endfor %}
+            </select>
+            {{ field_error(errors, "room_id") }}
+          </div>
+          <div class="field">
+            <label for="status">Guest status</label>
+            <select id="status" name="status" required>
+              {% for value in statuses %}
+              <option value="{{ value }}" {% if form.status == value %}selected{% endif %}>{{ status_labels[value] }}</option>
+              {% endfor %}
+            </select>
+            {{ field_error(errors, "status") }}
+          </div>
+          <div class="field">
+            <label for="check_in">Check-in date</label>
+            <input id="check_in" name="check_in" type="date" value="{{ form.check_in }}">
+            {{ field_error(errors, "check_in") }}
+          </div>
+          <div class="field">
+            <label for="check_out">Check-out date</label>
+            <input id="check_out" name="check_out" type="date" value="{{ form.check_out }}">
+            {{ field_error(errors, "check_out") }}
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Stay notes <span class="label-optional">Optional</span></label>
+          <textarea id="notes" name="notes" rows="4" maxlength="2000" placeholder="Preferences, accessibility needs, or arrival notes.">{{ form.notes }}</textarea>
+          {{ field_error(errors, "notes") }}
+        </div>
+
+        <div class="form-actions">
+          <a class="button button-ghost" href="/guests">Cancel</a>
+          <button class="button button-primary" type="submit">
+            <span class="button-label">{{ "Register guest" if mode == "new" else "Save changes" }}</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+  <aside class="form-aside">
+    <div class="info-card">
+      {{ icon("bed") }}
+      <h3>Room assignment</h3>
+      <p>Checking a guest in marks the room occupied. Checking them out or cancelling the stay releases the room automatically.</p>
+    </div>
+    <div class="info-card">
+      {{ icon("calendar") }}
+      <h3>Stay dates</h3>
+      <p>Check-out must be after check-in. Card expiry defaults to the guest’s check-out date when you issue a key card.</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}

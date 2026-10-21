@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, status_badge %}
+{% block title %}Team access · {{ hotel.name }}{% endblock %}
+{% block page_title %}Team access{% endblock %}
+{% block eyebrow %}Users and permissions{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <div>
+    <p>Manage who can sign in and what they are allowed to do.</p>
+  </div>
+  <div class="page-actions">
+    <a class="button button-primary" href="/users/new">{{ icon("plus") }} Add team member</a>
+  </div>
+</div>
+
+<div class="notice notice-info">
+  {{ icon("shield") }}
+  <div><strong>Least privilege.</strong> Receptionists manage rooms, guests, and cards. Administrators also manage team access and settings.</div>
+</div>
+
+<section class="panel panel-flush">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Member</th><th>Username</th><th>Role</th><th>Status</th><th>Created</th><th class="cell-actions">Actions</th></tr></thead>
+      <tbody>
+        {% for member in users %}
+        <tr>
+          <td>
+            <div class="person-cell">
+              <span class="avatar avatar-small">{{ member.full_name|initials }}</span>
+              <span><strong>{{ member.full_name }}</strong><small>{{ member.email }}</small></span>
+            </div>
+          </td>
+          <td class="mono">{{ member.username }}</td>
+          <td><span class="badge {% if member.role == 'administrator' %}badge-navy{% else %}badge-muted{% endif %}">{{ member.role|status_label }}</span></td>
+          <td>{% if member.active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Disabled</span>{% endif %}</td>
+          <td class="cell-nowrap">{{ member.created_at|short_date }}</td>
+          <td class="cell-actions"><a class="icon-button" href="/users/{{ member.id }}/edit" aria-label="Edit {{ member.full_name }}">{{ icon("edit") }}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
